@@ -7,9 +7,10 @@ trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 steps:
+# Step 1: Maven Build
 - task: Maven@3
   inputs:
     mavenPomFile: 'pom.xml'
@@ -20,13 +21,19 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package'
-    - task: PublishPipelineArtifact@1
+
+# Step 2: Copy build output to artifact directory
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)'
+    Contents: '**/target/*.jar'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+# Step 3: Publish Artifact
+- task: PublishPipelineArtifact@1
   inputs:
     targetPath: '$(Build.ArtifactStagingDirectory)'
     artifact: 'drop'
     publishLocation: 'pipeline'
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: '/home/vsts/work/1/s/output'
-    artifact: 'build-artifacts'
+
 
